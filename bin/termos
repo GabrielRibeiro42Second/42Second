@@ -1,0 +1,80 @@
+#!/usr/bin/env bash
+
+###########################################################
+#
+# termos
+#
+# CLI principal do TermOS.
+#
+# Uso:
+#
+#   termos open       - Abrir workspace launcher
+#   termos doctor     - Verificar dependências
+#   termos install    - Instalar dependências
+#   termos update     - Atualizar configurações
+#   termos list       - Listar sessões ativas
+#   termos version    - Mostrar versão
+#
+###########################################################
+
+set -Eeuo pipefail
+
+# Resolve symlink to find actual script location
+_termos_real_source="${BASH_SOURCE[0]}"
+while [[ -L "$_termos_real_source" ]]; do
+    _termos_real_source="$(readlink "$_termos_real_source")"
+    [[ "$_termos_real_source" != /* ]] && _termos_real_source="$(dirname "${BASH_SOURCE[0]}")/$_termos_real_source"
+done
+export TERMOS_HOME="${TERMOS_HOME:-$(cd -- "$(dirname -- "$_termos_real_source")/.." &>/dev/null && pwd)}"
+
+source "$TERMOS_HOME/src/core/bootstrap.sh"
+
+TERMOS_VERSION="0.1.0"
+
+termos::_usage() {
+    echo ""
+    echo "  TermOS v$TERMOS_VERSION"
+    echo "  ─────────────────────"
+    echo ""
+    echo "  Commands:"
+    echo "    open       Open workspace launcher"
+    echo "    doctor     Check dependencies"
+    echo "    install    Install dependencies"
+    echo "    update     Reload configuration"
+    echo "    list       List active sessions"
+    echo "    version    Show version"
+    echo ""
+}
+
+case "${1:-help}" in
+    open)
+        source "$TERMOS_HOME/src/cli/open.sh"
+        open::run
+        ;;
+    doctor)
+        source "$TERMOS_HOME/src/cli/doctor.sh"
+        doctor::run
+        ;;
+    install)
+        source "$TERMOS_HOME/src/cli/install.sh"
+        install::run
+        ;;
+    update)
+        source "$TERMOS_HOME/src/cli/update.sh"
+        update::run
+        ;;
+    list)
+        session::list
+        ;;
+    version|-v|--version)
+        echo "TermOS v$TERMOS_VERSION"
+        ;;
+    help|-h|--help|"")
+        termos::_usage
+        ;;
+    *)
+        echo "  Unknown command: $1"
+        termos::_usage
+        exit 1
+        ;;
+esac
