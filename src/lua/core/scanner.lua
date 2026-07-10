@@ -1,6 +1,6 @@
 local Filesystem       = require("utils.filesystem")
 local Project          = require("models.project")
-local LayoutDetecotr   = require("detectors.layout")
+local LayoutDetector   = require("detectors.layout")
 local DockerDetector   = require("detectors.docker")
 local GitDetector      = require("detectors.git")
 local LanguageDetector = require("detectors.language")
@@ -11,15 +11,15 @@ local Scanner          = {}
 
 function Scanner.scan(path)
   local project = Project.new()
-
-  project.path = path
-  project.language = LanguageDetector.detect(path)
-  project.git = GitDetector.detect(path)
-  project.readme = ReadmeDetector.detect(path)
-  project.docker = DockerDetector.detect(path)
-  project.layout = LayoutDetecotr.detect(path)
-  project.plugins = PluginsDetector.detect(path)
-
+  Project.configure(project, {
+    path = path,
+    language = LanguageDetector.detect(path),
+    git = GitDetector.detect(path),
+    readme = ReadmeDetector.detect(path),
+    docker = DockerDetector.detect(path),
+    layout = LayoutDetector.detect(path),
+    plugins = PluginsDetector.detect(path)
+  })
   return project
 end
 
