@@ -7,4 +7,4 @@ local report = Inspector.inspect(project)
 
 Assert.is_iquals(project, report.project)
 Assert.is_iquals("table", type(report.suggestions))
-Assert.is_false(project)
+Assert.is_false(project.readme)

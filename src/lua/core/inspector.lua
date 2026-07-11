@@ -1,7 +1,4 @@
-local Project = require("models.project")
-
 local Inspector = {}
-local project = Project.new()
 
 function Inspector.inspect(project)
   local report = {
@@ -13,6 +10,7 @@ function Inspector.inspect(project)
       "Projeto não possui README.md"
     )
   end
+  return report
 end
 
 return Inspector
