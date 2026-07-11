@@ -3,7 +3,9 @@ local Inspector = {}
 function Inspector.inspect(project)
   return {
     project = project,
-    suggestion = {}
+    suggestions = {
+      project.readme == false
+    }
   }
 end
 
