@@ -1,5 +1,5 @@
 local Inspector = require("core.inspector")
-local Assert = require("tests.Assert ")
+local Assert = require("tests.lua.Assert")
 local Project = require("tests.lua.project")
 
 local report = Inspector.inspect(Project)
