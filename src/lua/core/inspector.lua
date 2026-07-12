@@ -10,6 +10,13 @@ function Inspector.inspect(project)
       "Projeto não possui README.md"
     )
   end
+
+  if project.git == false then
+    table.insert(
+      report.suggestions,
+      "Projeto não possui Git."
+    )
+  end
   return report
 end
 

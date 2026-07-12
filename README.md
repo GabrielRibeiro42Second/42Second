@@ -1,19 +1,20 @@
 # TermOS
 
-A workspace framework for tmux. Not a config — a system.
+Um sistema de estudos para tmux focado em quem precisa de organização e disciplina.
 
-## What is TermOS?
+## Oque é o termOS?
 
-TermOS turns tmux into a workspace manager. Press a key, pick a project, and get a fully configured workspace with the right layout, tools, and context automatically.
+TermOS é um gerenciador de workspaces. Precione uma tecla e tenho o layout necessario para o projeto selecionado.
 
 ## Features
 
-- **Smart workspace launcher** — fzf popup to browse and open projects
-- **Auto-detection** — recognizes Java, Python, Node, Rust, Go, Docker, and more
-- **Layout engine** — each project type gets a tailored pane layout
-- **Plugin system** — Git, Docker, README, Tasks auto-open in separate windows
-- **CLI tool** — `termos open`, `termos doctor`, `termos install`
-- **Event-driven** — plugins subscribe to events, core stays clean
+- **Laucher de espaço de trabalho inteligente** 
+— popup do fzf para navegar e abrir projetos 
+- **Auto-detecção** — reconhece Java, Python, Node, Rust, Go, Docker e mais 
+- **Motor de layout** — cada tipo de projeto recebe um layout de painéis personalizado 
+- **Sistema de plugins** — Git, Docker, README, Tarefas se abrem automaticamente em janelas separadas 
+- **Ferramenta CLI** — 'termos open', 'termos doctor', 'termos install' 
+- **Orientado a eventos** — plugins assinam eventos, o núcleo permanece limpo
 
 ## Quick Start
 
@@ -21,26 +22,26 @@ TermOS turns tmux into a workspace manager. Press a key, pick a project, and get
 # Install
 ./install.sh
 
-# Check dependencies
+# Checando dependencies
 termos doctor
 
-# Open workspace launcher (inside tmux)
+# Abrindo projetos (dentro do tmux)
 termos open
 ```
 
-## tmux Configuration
+## tmux Configs
 
 Add to your `~/.config/tmux/tmux.conf`:
 
 ```bash
-# Set TermOS home
+# TermOS na home
 set-environment -g TERMOS_HOME ~/.config/termos
 
 # Workspace launcher
 bind p display-popup -w 75% -h 75% -E "termos open"
 ```
 
-Then press `Ctrl+Space p` to open the launcher.
+Precione `Ctrl+Space p` para abrir o Laucher
 
 ## Project Structure
 

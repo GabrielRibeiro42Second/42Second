@@ -8,3 +8,14 @@ local report = Inspector.inspect(project)
 Assert.is_iquals(project, report.project)
 Assert.is_iquals("table", type(report.suggestions))
 Assert.is_false(project.readme)
+Assert.is_false(project.git)
+Assert.is_iquals(1, #report.suggestions)
+Assert.is_iquals(2, #report.suggestions)
+Assert.is_iquals(
+  "Projeto não possui readme.md",
+  report.suggestions[1]
+)
+Assert.is_iquals(
+  "Projeto não possui Git",
+  report.suggestions[2]
+)
