@@ -7,7 +7,7 @@ function Inspector.inspect(project)
   }
   if project.readme == false then
     table.insert(report.suggestions,
-      "Projeto não possui README.md"
+      "Projeto não possui README.md."
     )
   end
 
