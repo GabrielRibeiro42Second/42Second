@@ -1,4 +1,4 @@
-local Presenter = require("tests.lua.presenter")
+local Presenter = require("core.presenter")
 local Project = require("models.project")
 local Inspector = require("core.inspector")
 
