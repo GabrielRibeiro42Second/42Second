@@ -1,4 +1,3 @@
-local Inspector = require("core.inspector")
 local Presenter = {}
 
 function Presenter.render(report)

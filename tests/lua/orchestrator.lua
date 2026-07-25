@@ -1,4 +1,6 @@
 local Orchestrator = require("core.orchestrator")
 local Assert = require("tests.lua.assert")
 
-Assert.is_equals("table", type(Orchestrator))
+local output = Orchestrator.run("algum/caminho")
+
+Assert.is_equals("string", type(output))
