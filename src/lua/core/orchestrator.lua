@@ -1,10 +1,17 @@
+local Scanner = require("core.scanner")
+local Inspector = require("core.inspector")
+
 local Orchestrator = {}
 
-local path = "teste"
+function Orchestrator.run(path)
+  local project = Scanner.scan(path)
+  return project
+end
 
-function Orchestrator.run(loc)
-  loc = path
-  return loc
+function Orchestrator.analize(path)
+  local project = Orchestrator.run(path)
+  local report = Inspector.inspect(project)
+  return report
 end
 
 return Orchestrator
