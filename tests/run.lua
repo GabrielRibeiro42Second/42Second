@@ -18,6 +18,7 @@ dofile("tests/lua/plugins_detector.lua")
 dofile("tests/lua/inspector.lua")
 dofile("tests/lua/presenter.lua")
 dofile("tests/lua/orchestrator.lua")
+dofile("tests/lua/tui.lua")
 
 Runner.summary()
 
