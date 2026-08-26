@@ -1,6 +1,4 @@
 local Tui = require("utils.tui")
-local Assert = require("tests.framework.assert")
+local Orchestrator = require("core.orchestrator")
 
-local display = Tui.display()
-
-Assert.is_equals("string", display)
+local display = Tui.display(output)

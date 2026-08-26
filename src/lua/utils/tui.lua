@@ -1,5 +1,11 @@
-local Presenter = require("core.presenter")
+local Orchestrator = require("core.orchestrator")
 
-local tui = {}
+local Tui = {}
+local path = "meu/projeto"
+local output = Orchestrator.run(path)
 
-return tui
+function Tui.display(output)
+  print(output)
+end
+
+return Tui
