@@ -32,7 +32,7 @@ doctor::_check_tmux_version() {
     major=$(echo "$version" | cut -d. -f1)
     minor=$(echo "$version" | cut -d. -f2)
 
-    if [[ "$major" -ge 3 && "$minor" -ge 2 ]]; then
+    if [[ "$major" -ge 4 ]] || { [[ "$major" -eq 3 ]] && [[ "$minor" -ge 2 ]]; }; then
         printf "  \033[0;32m✔\033[0m tmux %s (popup support)\n" "$version"
     else
         printf "  \033[0;33m⚠\033[0m tmux %s (popup requires 3.2+)\n" "$version"

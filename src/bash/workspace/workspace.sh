@@ -16,7 +16,8 @@
 ###########################################################
 
 TERMOS_WORKSPACE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
-source "$TERMOS_WORKSPACE_DIR/../core/bootstrap.sh"
+
+# bootstrap já deve ter sido carregado por bin/termos
 source "$TERMOS_WORKSPACE_DIR/detector.sh"
 source "$TERMOS_WORKSPACE_DIR/builder.sh"
 source "$TERMOS_WORKSPACE_DIR/launcher.sh"

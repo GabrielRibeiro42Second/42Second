@@ -27,8 +27,6 @@ while [[ -L "$_termos_real_source" ]]; do
 done
 export TERMOS_HOME="${TERMOS_HOME:-$(cd -- "$(dirname -- "$_termos_real_source")/.." &>/dev/null && pwd)}"
 
-source "$TERMOS_HOME/src/core/bootstrap.sh"
-
 TERMOS_VERSION="0.1.0"
 
 termos::_usage() {
@@ -46,31 +44,40 @@ termos::_usage() {
     echo ""
 }
 
+# Comandos que não precisam do bootstrap
+case "${1:-help}" in
+    version|-v|--version)
+        echo "TermOS v$TERMOS_VERSION"
+        exit 0
+        ;;
+    help|-h|--help|"")
+        termos::_usage
+        exit 0
+        ;;
+esac
+
+# Carrega bootstrap apenas para comandos que precisam
+source "$TERMOS_HOME/src/bash/core/bootstrap.sh"
+
 case "${1:-help}" in
     open)
-        source "$TERMOS_HOME/src/cli/open.sh"
+        source "$TERMOS_HOME/src/bash/cli/open.sh"
         open::run
         ;;
     doctor)
-        source "$TERMOS_HOME/src/cli/doctor.sh"
+        source "$TERMOS_HOME/src/bash/cli/doctor.sh"
         doctor::run
         ;;
     install)
-        source "$TERMOS_HOME/src/cli/install.sh"
+        source "$TERMOS_HOME/src/bash/cli/install.sh"
         install::run
         ;;
     update)
-        source "$TERMOS_HOME/src/cli/update.sh"
+        source "$TERMOS_HOME/src/bash/cli/update.sh"
         update::run
         ;;
     list)
         session::list
-        ;;
-    version|-v|--version)
-        echo "TermOS v$TERMOS_VERSION"
-        ;;
-    help|-h|--help|"")
-        termos::_usage
         ;;
     *)
         echo "  Unknown command: $1"

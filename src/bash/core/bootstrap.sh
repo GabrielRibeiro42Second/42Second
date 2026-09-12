@@ -24,11 +24,11 @@ fi
 
 # Exporta caminhos padronizados
 export TERMOS_HOME="$_TERMOS_ROOT"
-export TERMOS_SRC="$_TERMOS_ROOT/src"
-export TERMOS_CORE="$_TERMOS_ROOT/src/core"
+export TERMOS_SRC="$_TERMOS_ROOT/src/bash"
+export TERMOS_CORE="$_TERMOS_ROOT/src/bash/core"
 export TERMOS_CONFIG_DIR="$_TERMOS_ROOT/config"
-export TERMOS_LAYOUTS_DIR="$_TERMOS_ROOT/src/layouts"
-export TERMOS_PLUGINS_DIR="$_TERMOS_ROOT/src/plugins"
+export TERMOS_LAYOUTS_DIR="$_TERMOS_ROOT/src/bash/layouts"
+export TERMOS_PLUGINS_DIR="$_TERMOS_ROOT/src/bash/plugins"
 export TERMOS_BIN="$_TERMOS_ROOT/bin"
 
 # Carrega core (ordem importa)

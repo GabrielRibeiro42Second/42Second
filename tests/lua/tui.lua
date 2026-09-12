@@ -1,4 +1,4 @@
 local Tui = require("utils.tui")
-local Orchestrator = require("core.orchestrator")
+local Assert = require("tests.framework.assert")
 
-local display = Tui.display(output)
+Tui.display(output)
