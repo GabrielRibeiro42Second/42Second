@@ -5,20 +5,34 @@
 local Helpers = require("tests.framework.helpers")
 local Runner = require("tests.framework.runner")
 
+local SUITES = {
+  "tests/lua/framework.lua",
+  "tests/lua/project.lua",
+  "tests/lua/filesystem.lua",
+  "tests/lua/language_detector.lua",
+  "tests/lua/git_detector.lua",
+  "tests/lua/scanner.lua",
+  "tests/lua/readme_detector.lua",
+  "tests/lua/docker_detector.lua",
+  "tests/lua/layout_detector.lua",
+  "tests/lua/plugins_detector.lua",
+  "tests/lua/inspector.lua",
+  "tests/lua/presenter.lua",
+  "tests/lua/orchestrator.lua",
+  "tests/lua/tui.lua",
+}
+
 Helpers.header("termOS Test Suite")
 
-dofile("tests/lua/filesystem.lua")
-dofile("tests/lua/language_detector.lua")
-dofile("tests/lua/git_detector.lua")
-dofile("tests/lua/scanner.lua")
-dofile("tests/lua/readme_detector.lua")
-dofile("tests/lua/docker_detector.lua")
-dofile("tests/lua/layout_detector.lua")
-dofile("tests/lua/plugins_detector.lua")
-dofile("tests/lua/inspector.lua")
-dofile("tests/lua/presenter.lua")
-dofile("tests/lua/orchestrator.lua")
-dofile("tests/lua/tui.lua")
+for _, suite in ipairs(SUITES) do
+  local ok, err = pcall(dofile, suite)
+
+  if not ok then
+    Runner.run(suite, function()
+      error(err, 0)
+    end)
+  end
+end
 
 Runner.summary()
 

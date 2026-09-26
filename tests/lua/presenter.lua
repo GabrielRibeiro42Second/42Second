@@ -1,14 +1,24 @@
-local Presenter = require("core.presenter")
-local Project = require("models.project")
-local Inspector = require("core.inspector")
+local Runner = require("tests.framework.runner")
 local Assert = require("tests.framework.assert")
+local Presenter = require("core.presenter")
+local Inspector = require("core.inspector")
+local Project = require("models.project")
 
-local project = Project.new()
-local report = Inspector.inspect(project)
+local function report()
+  return Inspector.inspect(Project.new())
+end
 
-local output = Presenter.render(report)
+Runner.run("Presenter.render returns a string", function()
+  Assert.is_equals("string", type(Presenter.render(report())))
+end)
 
-Assert.is_equals(
-  "string",
-  type(output)
-)
+Runner.run("Presenter.render lists every suggestion", function()
+  local output = Presenter.render(report())
+
+  Assert.isnot_nil(
+    output:find("Projeto não possui README.md.", 1, true)
+  )
+  Assert.isnot_nil(
+    output:find("Projeto não possui Git.", 1, true)
+  )
+end)

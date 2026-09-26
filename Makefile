@@ -1,4 +1,4 @@
-.PHONY: install uninstall doctor lint help
+.PHONY: install uninstall doctor lint test help
 
 SHELL := /bin/bash
 
@@ -27,10 +27,7 @@ lint: ## Run shellcheck on all scripts
 	@find src/ bin/ -name "*.sh" -o -name "termos" | xargs shellcheck --severity=warning || true
 	@echo "Done."
 
+LUA_PATH := ./src/lua/?.lua;./src/lua/?/init.lua;./?.lua;;
 
-.PHONY: test test-workspace test-scanner test-filesystem
-
-LUA_PATH := ./src/lua/?.lua;./src/lua/?/init.lua;;
-
-test:
+test: ## Run the Lua test suite
 	@LUA_PATH="$(LUA_PATH)" lua tests/run.lua
