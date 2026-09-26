@@ -13,12 +13,14 @@ plugin::docker() {
     local dir="$2"
 
     filesystem::has_file "$dir" "docker-compose.yml" || \
+    filesystem::has_file "$dir" "docker-compose.yaml" || \
     filesystem::has_file "$dir" "compose.yml" || \
     filesystem::has_file "$dir" "compose.yaml" || \
         return 0
 
-    tmux new-window -t "$session" -n "Docker" -c "$dir"
-    tmux send-keys -t "$session:Docker" "docker compose logs -f" C-m
+    local pane
+    pane=$(tmux::new_window "$session" "Docker" "$dir") || return 0
+    tmux::run "$pane" "docker compose logs -f"
 
     logger::debug "Plugin Docker ativado para $session"
 }

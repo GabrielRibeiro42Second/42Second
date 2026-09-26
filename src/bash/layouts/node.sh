@@ -12,31 +12,34 @@
 # │   LazyGit    │    Shell      │
 # └──────────────┴───────────────┘
 #
-# Detecta e instala dependências se necessário.
+# API: layout::node "session" "dir"
 #
 ###########################################################
 
 layout::node() {
     local session="$1"
     local dir="$2"
-    local editor
+
+    local editor git_ui
     editor=$(config::get "editor" "nvim")
-    local git_ui
     git_ui=$(config::get "git_ui" "lazygit")
 
-    tmux rename-window -t "$session:1" "Node"
+    local window root
+    window=$(tmux::first_window "$session") || return 1
+    root=$(tmux::active_pane "$session" "$window") || return 1
 
-    # Main editor pane
-    tmux send-keys -t "$session:1.1" "$editor ." C-m
+    tmux rename-window -t "$session:$window" "Node"
+    tmux::focus "$root"
+    tmux::run "$root" "$editor ."
 
-    # Git UI (right)
-    tmux split-window -h -c "$dir"
-    tmux send-keys "$git_ui" C-m
+    local side
+    side=$(tmux::split_h "$root" "$dir") || return 1
+    tmux::run "$side" "$git_ui"
 
-    # Shell (bottom)
-    tmux split-window -v -c "$dir"
-    tmux send-keys "clear" C-m
+    local shell
+    shell=$(tmux::split_v "$side" "$dir") || return 1
+    tmux::run "$shell" "clear"
 
-    tmux select-layout main-vertical
-    tmux select-pane -t "$session:1.1"
+    tmux::select_layout "$session" "$window" "main-horizontal" "60%"
+    tmux::focus "$root"
 }

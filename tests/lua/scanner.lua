@@ -69,3 +69,38 @@ Runner.run("Scanner detects Git repository", function()
 
   Assert.is_true(project.git)
 end)
+
+Runner.run("Scanner detects README", function()
+  local project = Scanner.scan(
+    Helpers.fixture("readme")
+  )
+
+  Assert.is_true(project.readme)
+  Assert.is_false(project.git)
+end)
+
+Runner.run("Scanner detects Docker", function()
+  local project = Scanner.scan(
+    Helpers.fixture("docker")
+  )
+
+  Assert.is_true(project.docker)
+  Assert.is_equals("docker", project.language)
+end)
+
+Runner.run("Scanner keeps project plugins", function()
+  local project = Scanner.scan(
+    Helpers.fixture("plugins")
+  )
+
+  Assert.is_equals(3, #project.plugins)
+end)
+
+Runner.run("Scanner returns nil layout when absent", function()
+  local project = Scanner.scan(
+    Helpers.fixture("empty")
+  )
+
+  Assert.is_nil(project.layout)
+  Assert.is_equals(0, #project.plugins)
+end)

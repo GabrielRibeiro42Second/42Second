@@ -67,3 +67,11 @@ Runner.run("Inspector has no suggestions when nothing is missing", function()
 
   Assert.is_equals(0, #report.suggestions)
 end)
+
+-- `nil` precisa contar como ausente: um projeto montado à mão
+-- (sem passar por Project.new()) não pode passar despercebido.
+Runner.run("Inspector treats nil fields as missing", function()
+  local report = Inspector.inspect({ path = "/tmp/x" })
+
+  Assert.is_equals(2, #report.suggestions)
+end)

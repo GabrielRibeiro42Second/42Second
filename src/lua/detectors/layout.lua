@@ -1,14 +1,15 @@
---------------------------------------------------
----
---- Layout Detector
----
---- ---------------------------------------------
+------------------------------------------------------------
+-- Layout Detector
+--
+-- Detecta um layout declarado dentro do próprio projeto
+-- (.termos/layout.lua).
+------------------------------------------------------------
 
 local Filesystem = require("utils.filesystem")
 
-local LayouDetector = {}
+local LayoutDetector = {}
 
-function LayouDetector.detect(path)
+function LayoutDetector.detect(path)
   if Filesystem.exists(
         Filesystem.join(path, ".termos", "layout.lua")
       ) then
@@ -18,4 +19,4 @@ function LayouDetector.detect(path)
   return nil
 end
 
-return LayouDetector
+return LayoutDetector

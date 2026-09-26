@@ -12,30 +12,34 @@
 # │   Yazi       │    Shell      │
 # └──────────────┴───────────────┘
 #
+# API: layout::<tipo> "session" "dir"
+#
 ###########################################################
 
 layout::default() {
     local session="$1"
     local dir="$2"
-    local editor
+
+    local editor file_manager
     editor=$(config::get "editor" "nvim")
-    local file_manager
     file_manager=$(config::get "file_manager" "yazi")
 
-    tmux rename-window -t "$session:1" "Workspace"
+    local window root
+    window=$(tmux::first_window "$session") || return 1
+    root=$(tmux::active_pane "$session" "$window") || return 1
 
-    # Main editor pane
-    tmux send-keys -t "$session:1.1" "$editor ." C-m
+    tmux rename-window -t "$session:$window" "Workspace"
+    tmux::focus "$root"
+    tmux::run "$root" "$editor ."
 
-    # File manager (right)
-    tmux split-window -h -c "$dir"
-    tmux send-keys "$file_manager" C-m
+    local side
+    side=$(tmux::split_h "$root" "$dir") || return 1
+    tmux::run "$side" "$file_manager"
 
-    # Shell (bottom)
-    tmux split-window -v -c "$dir"
-    tmux send-keys "clear" C-m
+    local shell
+    shell=$(tmux::split_v "$side" "$dir") || return 1
+    tmux::run "$shell" "clear"
 
-    # Layout
-    tmux select-layout main-vertical
-    tmux select-pane -t "$session:1.1"
+    tmux::select_layout "$session" "$window" "main-horizontal" "60%"
+    tmux::focus "$root"
 }

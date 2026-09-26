@@ -12,6 +12,17 @@ Runner.total = 0
 Runner.passed = 0
 Runner.failed = 0
 
+local NAME_WIDTH = 46
+
+local function write_name(name)
+  io.write(name)
+  local padding = NAME_WIDTH - #name
+  if padding < 1 then
+    padding = 1
+  end
+  io.write(string.rep(" ", padding))
+end
+
 ----------------------------------------------------------
 -- Executa um teste
 ----------------------------------------------------------
@@ -19,7 +30,7 @@ Runner.failed = 0
 function Runner.run(name, test)
   Runner.total = Runner.total + 1
 
-  io.write(string.format("%-30s", name))
+  write_name(name)
 
   local success, err = pcall(test)
 
@@ -32,9 +43,20 @@ function Runner.run(name, test)
   Runner.failed = Runner.failed + 1
 
   print("[FAIL]")
-  print(err)
+  print(tostring(err))
 
   return false
+end
+
+----------------------------------------------------------
+-- Registra uma falha fora do contexto de um teste
+-- (suite que não carregou, arquivo esquecido, etc.)
+----------------------------------------------------------
+
+function Runner.fail(name, message)
+  return Runner.run(name, function()
+    error(message, 0)
+  end)
 end
 
 ----------------------------------------------------------
@@ -51,10 +73,17 @@ function Runner.summary()
 end
 
 ----------------------------------------------------------
--- Indica se houve falhas
+-- Indica se houve falhas.
+-- Zero testes NÃO é sucesso: uma suíte que nunca rodou
+-- tem que quebrar o build.
 ----------------------------------------------------------
 
 function Runner.success()
+  if Runner.total == 0 then
+    print("Nenhum teste executado.")
+    return false
+  end
+
   return Runner.failed == 0
 end
 

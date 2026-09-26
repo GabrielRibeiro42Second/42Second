@@ -4,7 +4,8 @@
 #
 # builder.sh
 #
-# Monta o workspace: cria sessão, aplica layout, executa plugins.
+# Monta o workspace: cria sessão, aplica layout, registra
+# plugins como handlers de eventos e dispara o ciclo.
 #
 # API:
 #
@@ -26,47 +27,84 @@ builder::build() {
     session::create "$session" "$dir"
 
     _builder::_apply_layout "$type" "$session" "$dir"
-
-    _builder::_run_plugins "$session" "$dir"
-
-    tmux select-window -t "$session:1"
+    _builder::_register_plugins
 
     events::emit "workspace::created" "$session" "$dir" "$type"
+
+    _builder::_focus_first_window "$session"
 }
 
+# Escolhe e executa o layout.
+#
+# A função é invocada como condição de `||`, o que desativa
+# `set -e` dentro dela: uma falha parcial do layout não
+# derruba o CLI nem deixa a sessão pela metade.
 _builder::_apply_layout() {
-    local type="$1"
+    local requested="$1"
     local session="$2"
     local dir="$3"
+    local type="$requested"
 
+    if ! _builder::_load_layout "$type"; then
+        type="default"
+        if ! _builder::_load_layout "default"; then
+            logger::warn "Nenhum layout encontrado, usando sessão limpa"
+            return 0
+        fi
+        logger::debug "Layout '$requested' inexistente, usando default"
+    fi
+
+    logger::debug "Aplicando layout: layout::$type"
+
+    "layout::${type}" "$session" "$dir" \
+        || logger::warn "Layout '$type' falhou"
+}
+
+# Sourceia o arquivo de layout e garante que a função
+# correspondente exista. Retorna 0 apenas se existir.
+_builder::_load_layout() {
+    local type="$1"
     local layout_file="$TERMOS_LAYOUTS_DIR/${type}.sh"
 
-    if [[ ! -f "$layout_file" ]]; then
-        layout_file="$TERMOS_LAYOUTS_DIR/default.sh"
+    if declare -F "layout::${type}" >/dev/null 2>&1; then
+        return 0
     fi
 
     if [[ -f "$layout_file" ]]; then
-        logger::debug "Aplicando layout: $layout_file"
+        logger::debug "Carregando layout: $layout_file"
+        # shellcheck source=/dev/null
         source "$layout_file"
-        "layout::${type}" "$session" "$dir" 2>/dev/null || \
-            layout::default "$session" "$dir"
-    else
-        logger::warn "Nenhum layout encontrado, usando session limpa"
     fi
+
+    declare -F "layout::${type}" >/dev/null 2>&1
 }
 
-_builder::_run_plugins() {
-    local session="$1"
-    local dir="$2"
+_builder::_register_plugins() {
+    local plugin plugin_name
 
-    local plugin
+    events::off "workspace::created"
+
     for plugin in "$TERMOS_PLUGINS_DIR"/*.sh; do
         [[ -f "$plugin" ]] || continue
-        logger::debug "Executando plugin: $(basename "$plugin")"
-        source "$plugin"
-        local plugin_name
         plugin_name=$(basename "$plugin" .sh)
-        "plugin::${plugin_name}" "$session" "$dir" 2>/dev/null || \
-            logger::warn "Plugin falhou: $plugin_name"
+
+        if ! declare -F "plugin::${plugin_name}" >/dev/null 2>&1; then
+            # shellcheck source=/dev/null
+            source "$plugin"
+        fi
+
+        if declare -F "plugin::${plugin_name}" >/dev/null 2>&1; then
+            events::on "workspace::created" "plugin::${plugin_name}"
+        else
+            logger::warn "Plugin inválido: $plugin_name"
+        fi
     done
+}
+
+_builder::_focus_first_window() {
+    local session="$1"
+    local window
+
+    window=$(tmux::first_window "$session" 2>/dev/null) || return 0
+    tmux::select_window "$session" "$window"
 }

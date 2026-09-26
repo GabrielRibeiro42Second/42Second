@@ -4,7 +4,7 @@
 #
 # git.sh
 #
-# Plugin: abre LazyGit se o projeto for um repositório Git.
+# Plugin: abre o Git UI se o projeto for um repositório.
 #
 ###########################################################
 
@@ -14,11 +14,11 @@ plugin::git() {
 
     filesystem::is_git_repo "$dir" || return 0
 
-    local git_ui
+    local git_ui pane
     git_ui=$(config::get "git_ui" "lazygit")
 
-    tmux new-window -t "$session" -n "Git" -c "$dir"
-    tmux send-keys -t "$session:Git" "$git_ui" C-m
+    pane=$(tmux::new_window "$session" "Git" "$dir") || return 0
+    tmux::run "$pane" "$git_ui"
 
     logger::debug "Plugin Git ativado para $session"
 }

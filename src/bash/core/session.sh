@@ -14,12 +14,17 @@
 #   session::kill "name"
 #   session::name_from_path "path"
 #   session::list
+#   session::has_server
 #
 ###########################################################
 
+session::has_server() {
+    tmux list-sessions &>/dev/null
+}
+
 session::exists() {
     local name="$1"
-    tmux has-session -t "$name" 2>/dev/null
+    tmux has-session -t "=$name" 2>/dev/null
 }
 
 session::create() {
@@ -43,7 +48,11 @@ session::switch() {
         return 1
     fi
 
-    tmux switch-client -t "$name"
+    if [[ -n "${TMUX:-}" ]]; then
+        tmux switch-client -t "=$name"
+    else
+        tmux attach-session -t "=$name"
+    fi
 }
 
 session::kill() {
@@ -55,7 +64,7 @@ session::kill() {
     fi
 
     logger::info "Encerrando sessão: $name"
-    tmux kill-session -t "$name"
+    tmux kill-session -t "=$name"
 }
 
 session::name_from_path() {
@@ -63,6 +72,13 @@ session::name_from_path() {
     basename "$path" | tr ' .-' '___'
 }
 
+# Lista as sessões como "nome<TAB>janelas<TAB>anexada".
+# Nunca falha: sem servidor tmux devolve lista vazia.
 session::list() {
-    tmux list-sessions -F '#{session_name}' 2>/dev/null
+    if ! session::has_server; then
+        return 0
+    fi
+
+    tmux list-sessions -F '#{session_name}	#{session_windows}	#{session_attached}' \
+        2>/dev/null || true
 }

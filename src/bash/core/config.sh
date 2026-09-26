@@ -9,12 +9,55 @@
 # API:
 #
 #   config::load
-#   config::get "CHAVE"
+#   config::get "CHAVE" ["PADRÃO"]
 #   config::set "CHAVE" "VALOR"
 #
 ###########################################################
 
 declare -A TERMOS_CONFIG=()
+
+_config::trim() {
+    local s="$1"
+    s="${s#"${s%%[![:space:]]*}"}"
+    s="${s%"${s##*[![:space:]]}"}"
+    printf '%s' "$s"
+}
+
+# Expande apenas `~`, `$VAR` e `${VAR}` de variáveis já
+# definidas no ambiente. Nada de `eval`: um valor malicioso
+# em termos.conf nunca é executado.
+_config::expand() {
+    local value="$1"
+    local guard=0
+    local name replacement
+
+    case "$value" in
+        "~")   value="$HOME" ;;
+        "~/"*) value="$HOME/${value#~/}" ;;
+    esac
+
+    while ((guard++ < 32)); do
+        if [[ "$value" =~ \$\{([A-Za-z_][A-Za-z0-9_]*)\} ]]; then
+            name="${BASH_REMATCH[1]}"
+            replacement=""
+            [[ -v "$name" ]] && replacement="${!name}"
+            value="${value//\$\{$name\}/$replacement}"
+            continue
+        fi
+
+        if [[ "$value" =~ \$([A-Za-z_][A-Za-z0-9_]*) ]]; then
+            name="${BASH_REMATCH[1]}"
+            replacement=""
+            [[ -v "$name" ]] && replacement="${!name}"
+            value="${value//\$$name/$replacement}"
+            continue
+        fi
+
+        break
+    done
+
+    printf '%s' "$value"
+}
 
 config::load() {
     local config_file="${TERMOS_CONFIG_FILE:-}"
@@ -25,22 +68,21 @@ config::load() {
 
     if [[ ! -f "$config_file" ]]; then
         logger::warn "Arquivo de configuração não encontrado: $config_file"
+        _config::apply_defaults
         return 1
     fi
 
     logger::debug "Carregando configuração: $config_file"
 
-    while IFS='=' read -r key value; do
-        key=$(echo "$key" | xargs)
-        value=$(echo "$value" | xargs)
+    local key value
+    while IFS='=' read -r key value || [[ -n "$key" ]]; do
+        key=$(_config::trim "$key")
+        value=$(_config::trim "${value:-}")
 
-        [[ -z "$key" ]] && continue
-        [[ "$key" == \#* ]] && continue
+        [[ "$key" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || continue
+        [[ -z "$value" ]] && continue
 
-        # Expand environment variables like $HOME
-        value=$(eval echo "$value")
-
-        TERMOS_CONFIG["$key"]="$value"
+        TERMOS_CONFIG["$key"]=$(_config::expand "$value")
     done < "$config_file"
 
     _config::apply_defaults
@@ -52,7 +94,7 @@ config::get() {
     local key="$1"
     local default="${2:-}"
 
-    echo "${TERMOS_CONFIG[$key]:-$default}"
+    printf '%s' "${TERMOS_CONFIG[$key]:-$default}"
 }
 
 config::set() {
@@ -70,4 +112,6 @@ _config::apply_defaults() {
     [[ -z "${TERMOS_CONFIG[popup_width]:-}" ]] && TERMOS_CONFIG[popup_width]="75%"
     [[ -z "${TERMOS_CONFIG[popup_height]:-}" ]] && TERMOS_CONFIG[popup_height]="75%"
     [[ -z "${TERMOS_CONFIG[max_depth]:-}" ]] && TERMOS_CONFIG[max_depth]="2"
+    [[ -z "${TERMOS_CONFIG[default_layout]:-}" ]] && TERMOS_CONFIG[default_layout]="main-vertical"
+    return 0
 }

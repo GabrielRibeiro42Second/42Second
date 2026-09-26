@@ -9,21 +9,33 @@
 # Uso:
 #
 #   workspace::open
+#   workspace::start "dir"
 #   workspace::create "name" "dir"
 #   workspace::list
 #   workspace::kill "name"
 #
 ###########################################################
 
-TERMOS_WORKSPACE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+if [[ -z "${TERMOS_WORKSPACE_LOADED:-}" ]]; then
+    declare -g TERMOS_WORKSPACE_LOADED=1
 
-# bootstrap já deve ter sido carregado por bin/termos
-source "$TERMOS_WORKSPACE_DIR/detector.sh"
-source "$TERMOS_WORKSPACE_DIR/builder.sh"
-source "$TERMOS_WORKSPACE_DIR/launcher.sh"
+    TERMOS_WORKSPACE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+
+    # bootstrap já deve ter sido carregado por bin/termos
+    # shellcheck source=/dev/null
+    source "$TERMOS_WORKSPACE_DIR/detector.sh"
+    # shellcheck source=/dev/null
+    source "$TERMOS_WORKSPACE_DIR/builder.sh"
+    # shellcheck source=/dev/null
+    source "$TERMOS_WORKSPACE_DIR/launcher.sh"
+fi
 
 workspace::open() {
     launcher::open
+}
+
+workspace::start() {
+    launcher::start "${1:-}"
 }
 
 workspace::create() {

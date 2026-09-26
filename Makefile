@@ -1,4 +1,4 @@
-.PHONY: install uninstall doctor lint test help
+.PHONY: install uninstall doctor lint test build help
 
 SHELL := /bin/bash
 
@@ -22,6 +22,14 @@ uninstall: ## Uninstall TermOS
 doctor: ## Check dependencies
 	@$(TERMOS_HOME)/bin/termos doctor 2>/dev/null || echo "Run 'make install' first"
 
+build: ## Build the TUI dashboard (bin/termos-tui)
+	@echo "Building termos-tui..."
+	@cd src/go && go build -o ../../bin/termos-tui .
+	@echo "OK: bin/termos-tui"
+
+test-go: ## Run the Go test suite
+	@cd src/go && go test ./...
+
 lint: ## Run shellcheck on all scripts
 	@echo "Running shellcheck..."
 	@find src/ bin/ -name "*.sh" -o -name "termos" | xargs shellcheck --severity=warning || true
@@ -29,5 +37,6 @@ lint: ## Run shellcheck on all scripts
 
 LUA_PATH := ./src/lua/?.lua;./src/lua/?/init.lua;./?.lua;;
 
-test: ## Run the Lua test suite
+test: ## Run the Lua and Go test suites
 	@LUA_PATH="$(LUA_PATH)" lua tests/run.lua
+	@cd src/go && go test ./...

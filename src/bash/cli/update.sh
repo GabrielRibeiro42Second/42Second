@@ -4,7 +4,7 @@
 #
 # update.sh
 #
-# Atualiza as configurações do TermOS.
+# Recarrega a configuração do TermOS e o tema do tmux.
 #
 # Uso:
 #
@@ -13,21 +13,25 @@
 ###########################################################
 
 update::run() {
-    echo ""
-    echo "  TermOS Update"
-    echo "  ─────────────"
-    echo ""
+    printf '\n  TermOS Update\n  ─────────────\n\n'
 
-    # Reload tmux config
-    if tmux list-sessions &>/dev/null; then
-        tmux source-file "$TERMOS_CONFIG_DIR/tmux.conf" 2>/dev/null && \
-            echo "  \033[0;32m✔\033[0m tmux config reloaded" || \
-            echo "  \033[0;33m⚠\033[0m Could not reload tmux (no session active?)"
+    # Recarrega termos.conf em memória
+    if config::load 2>/dev/null; then
+        printf '  \033[0;32m✔\033[0m config recarregada (%d chaves)\n' "${#TERMOS_CONFIG[@]}"
     else
-        echo "  \033[0;33m⚠\033[0m No tmux session active, skipping reload"
+        printf '  \033[0;33m⚠\033[0m config padrão aplicada (termos.conf ausente)\n'
     fi
 
-    echo ""
-    echo "  \033[0;32m✔  Update complete\033[0m"
-    echo ""
+    # Recarrega o tema no servidor tmux ativo
+    if tmux list-sessions &>/dev/null; then
+        if tmux source-file "$TERMOS_CONFIG_DIR/tmux.conf" 2>/dev/null; then
+            printf '  \033[0;32m✔\033[0m tema do tmux recarregado\n'
+        else
+            printf '  \033[0;33m⚠\033[0m não foi possível recarregar o tema\n'
+        fi
+    else
+        printf '  \033[0;33m⚠\033[0m nenhum servidor tmux ativo, tema não recarregado\n'
+    fi
+
+    printf '\n  \033[0;32m✔  Update complete\033[0m\n\n'
 }

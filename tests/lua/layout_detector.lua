@@ -1,12 +1,12 @@
 local Runner = require("tests.framework.runner")
 local Assert = require("tests.framework.assert")
-local Helper = require("tests.framework.helpers")
+local Helpers = require("tests.framework.helpers")
 
 local LayoutDetector = require("detectors.layout")
 
 Runner.run("Layout exists", function()
   local layout = LayoutDetector.detect(
-    Helper.fixture("layout")
+    Helpers.fixture("layout")
   )
 
   Assert.is_equals(
@@ -17,7 +17,7 @@ end)
 
 Runner.run("Layout does not exists", function()
   local layout = LayoutDetector.detect(
-    Helper.fixture("empty")
+    Helpers.fixture("empty")
   )
 
   Assert.is_nil(layout)

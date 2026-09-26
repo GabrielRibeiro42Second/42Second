@@ -12,6 +12,7 @@
 #
 #   events::emit "evento" "args..."
 #   events::on "evento" "callback"
+#   events::off "evento"
 #   events::list
 #
 ###########################################################
@@ -27,20 +28,26 @@ events::emit() {
     local handlers="${_EVENTS_HANDLERS[$event]:-}"
 
     if [[ -z "$handlers" ]]; then
+        logger::debug "Nenhum handler para: $event"
         return 0
     fi
 
-    local IFS='|'
+    local handler
+    local saved_ifs="$IFS"
+    IFS='|'
     for handler in $handlers; do
+        [[ -n "$handler" ]] || continue
         logger::debug "Executando handler: $handler"
-        if [[ -x "$handler" ]]; then
-            "$handler" "$@" || logger::warn "Handler falhou: $handler"
-        elif declare -f "$handler" >/dev/null 2>&1; then
+
+        if declare -F "$handler" >/dev/null 2>&1 || [[ -x "$handler" ]]; then
             "$handler" "$@" || logger::warn "Handler falhou: $handler"
         else
-            logger::warn "Handler não encontrado ou não executável: $handler"
+            logger::warn "Handler não encontrado: $handler"
         fi
     done
+    IFS="$saved_ifs"
+
+    return 0
 }
 
 events::on() {
@@ -56,9 +63,13 @@ events::on() {
     logger::debug "Handler registrado: $event -> $handler"
 }
 
+events::off() {
+    unset "_EVENTS_HANDLERS[$1]"
+}
+
 events::list() {
     local event
     for event in "${!_EVENTS_HANDLERS[@]}"; do
-        echo "$event: ${_EVENTS_HANDLERS[$event]}"
+        printf '%s: %s\n' "$event" "${_EVENTS_HANDLERS[$event]}"
     done
 }

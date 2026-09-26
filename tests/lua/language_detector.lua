@@ -5,40 +5,40 @@ local Helpers = require("tests.framework.helpers")
 local LanguageDetector = require("detectors.language")
 
 Runner.run("Detect Java", function()
-
-  local language = LanguageDetector.detect(
+  Assert.is_equals("java", LanguageDetector.detect(
     Helpers.fixture("java")
-  )
-
-  Assert.is_equals("java", language)
-
+  ))
 end)
 
 Runner.run("Detect Node", function()
-
-  local language = LanguageDetector.detect(
+  Assert.is_equals("node", LanguageDetector.detect(
     Helpers.fixture("node")
-  )
-
-  Assert.is_equals("node", language)
+  ))
 end)
 
 Runner.run("Detect Python", function()
-
-  local language = LanguageDetector.detect(
+  Assert.is_equals("python", LanguageDetector.detect(
     Helpers.fixture("python")
-  )
-
-  Assert.is_equals("python", language)
-
+  ))
 end)
 
 Runner.run("Unknown project", function()
-
-  local language = LanguageDetector.detect(
+  Assert.is_nil(LanguageDetector.detect(
     Helpers.fixture("empty")
-  )
+  ))
+end)
 
-  Assert.is_nil(language)
+-- O detector bash (workspace/detector.sh) checa pyproject.toml
+-- antes de package.json. O Lua precisa concordar, senão o
+-- relatório e o workspace dizem coisas diferentes.
+Runner.run("Python wins over Node (parity with bash)", function()
+  Assert.is_equals("python", LanguageDetector.detect(
+    Helpers.fixture("polyglot")
+  ))
+end)
 
+Runner.run("Unknown directory returns nil", function()
+  Assert.is_nil(LanguageDetector.detect(
+    Helpers.fixture("empty") .. "/nao_existe"
+  ))
 end)

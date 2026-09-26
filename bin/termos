@@ -8,79 +8,123 @@
 #
 # Uso:
 #
-#   termos open       - Abrir workspace launcher
-#   termos doctor     - Verificar dependências
-#   termos install    - Instalar dependências
-#   termos update     - Atualizar configurações
-#   termos list       - Listar sessões ativas
-#   termos version    - Mostrar versão
+#   termos open        - Workspace launcher (fzf)
+#   termos dashboard   - Dashboard em TUI (Bubble Tea)
+#   termos start <dir> - Abrir um workspace específico
+#   termos report [dir]- Relatório de saúde do projeto
+#   termos doctor      - Verificar dependências
+#   termos install     - Instalar dependências
+#   termos update      - Recarregar configuração
+#   termos list        - Listar sessões ativas
+#   termos version     - Mostrar versão
 #
 ###########################################################
 
 set -Eeuo pipefail
 
-# Resolve symlink to find actual script location
-_termos_real_source="${BASH_SOURCE[0]}"
-while [[ -L "$_termos_real_source" ]]; do
-    _termos_real_source="$(readlink "$_termos_real_source")"
-    [[ "$_termos_real_source" != /* ]] && _termos_real_source="$(dirname "${BASH_SOURCE[0]}")/$_termos_real_source"
+# Resolve symlinks para achar o script real
+_termos_source="${BASH_SOURCE[0]}"
+while [[ -L "$_termos_source" ]]; do
+    _termos_dir="$(cd -- "$(dirname -- "$_termos_source")" &>/dev/null && pwd)"
+    _termos_source="$(readlink "$_termos_source")"
+    [[ "$_termos_source" != /* ]] && _termos_source="$_termos_dir/$_termos_source"
 done
-export TERMOS_HOME="${TERMOS_HOME:-$(cd -- "$(dirname -- "$_termos_real_source")/.." &>/dev/null && pwd)}"
+export TERMOS_HOME="${TERMOS_HOME:-$(cd -- "$(dirname -- "$_termos_source")/.." &>/dev/null && pwd)}"
 
-TERMOS_VERSION="0.1.0"
+TERMOS_VERSION="0.2.0"
 
 termos::_usage() {
-    echo ""
-    echo "  TermOS v$TERMOS_VERSION"
-    echo "  ─────────────────────"
-    echo ""
-    echo "  Commands:"
-    echo "    open       Open workspace launcher"
-    echo "    doctor     Check dependencies"
-    echo "    install    Install dependencies"
-    echo "    update     Reload configuration"
-    echo "    list       List active sessions"
-    echo "    version    Show version"
-    echo ""
+    printf '\n'
+    printf '  \033[0;36mTermOS\033[0m v%s\n' "$TERMOS_VERSION"
+    printf '  ─────────────────\n\n'
+    printf '  Commands:\n'
+    printf '    \033[0;36mopen\033[0m       Workspace launcher (fzf)\n'
+    printf '    \033[0;36mdashboard\033[0m  Dashboard em TUI (Bubble Tea)\n'
+    printf '    \033[0;36mstart\033[0m      Abrir um workspace: termos start <dir>\n'
+    printf '    \033[0;36mreport\033[0m     Relatório do projeto: termos report [dir]\n'
+    printf '    \033[0;36mdoctor\033[0m     Verificar dependências\n'
+    printf '    \033[0;36minstall\033[0m    Instalar dependências\n'
+    printf '    \033[0;36mupdate\033[0m     Recarregar configuração\n'
+    printf '    \033[0;36mlist\033[0m       Listar sessões ativas\n'
+    printf '    \033[0;36mversion\033[0m    Mostrar versão\n'
+    printf '\n'
 }
 
-# Comandos que não precisam do bootstrap
-case "${1:-help}" in
+_termos_cmd="${1:-help}"
+
+case "$_termos_cmd" in
     version|-v|--version)
-        echo "TermOS v$TERMOS_VERSION"
+        printf 'TermOS v%s\n' "$TERMOS_VERSION"
         exit 0
         ;;
-    help|-h|--help|"")
+    help|-h|--help)
         termos::_usage
         exit 0
         ;;
 esac
 
-# Carrega bootstrap apenas para comandos que precisam
-source "$TERMOS_HOME/src/bash/core/bootstrap.sh"
+_bootstrap="$TERMOS_HOME/src/bash/core/bootstrap.sh"
 
-case "${1:-help}" in
+if [[ ! -f "$_bootstrap" ]]; then
+    printf 'termos: bootstrap não encontrado: %s\n' "$_bootstrap" >&2
+    printf '  TERMOS_HOME=%s (rode ./install.sh)\n' "$TERMOS_HOME" >&2
+    exit 1
+fi
+
+# shellcheck source=/dev/null
+source "$_bootstrap"
+
+case "$_termos_cmd" in
     open)
-        source "$TERMOS_HOME/src/bash/cli/open.sh"
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/open.sh"
         open::run
         ;;
+    dashboard|dash|ui)
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/dashboard.sh"
+        shift
+        dashboard::run "$@"
+        ;;
+    start)
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/start.sh"
+        shift
+        start::run "$@"
+        ;;
+    report)
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/report.sh"
+        shift
+        report::run "$@"
+        ;;
     doctor)
-        source "$TERMOS_HOME/src/bash/cli/doctor.sh"
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/doctor.sh"
         doctor::run
         ;;
     install)
-        source "$TERMOS_HOME/src/bash/cli/install.sh"
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/install.sh"
         install::run
         ;;
     update)
-        source "$TERMOS_HOME/src/bash/cli/update.sh"
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/cli/update.sh"
         update::run
         ;;
-    list)
-        session::list
+    list|ls)
+        printf '\n  \033[0;36mTermOS Sessions\033[0m\n  ───────────────\n\n'
+        if ! session::list | awk -F'\t' '
+            BEGIN { n = 0 }
+            { printf "  ● \033[0;36m%-24s\033[0m %2d janela(s)  %s\n", $1, $2, ($3 == "1" ? "[anexada]" : ""); n++ }
+            END { if (n == 0) print "  (nenhuma sessão ativa)"; exit 0 }'; then
+            printf '  (nenhuma sessão ativa)\n'
+        fi
+        printf '\n'
         ;;
     *)
-        echo "  Unknown command: $1"
+        printf '\n  Unknown command: %s\n' "$_termos_cmd"
         termos::_usage
         exit 1
         ;;

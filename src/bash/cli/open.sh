@@ -4,7 +4,7 @@
 #
 # open.sh
 #
-# Abre o workspace launcher via popup.
+# Abre o workspace launcher (fzf).
 #
 # Uso:
 #
@@ -13,6 +13,9 @@
 ###########################################################
 
 open::run() {
-    source "$TERMOS_SRC/workspace/workspace.sh"
+    if [[ -z "${TERMOS_WORKSPACE_LOADED:-}" ]]; then
+        # shellcheck source=/dev/null
+        source "$TERMOS_SRC/workspace/workspace.sh"
+    fi
     workspace::open
 }

@@ -36,9 +36,17 @@ cp -r src/ "$INSTALL_DIR/"
 cp -r config/ "$INSTALL_DIR/"
 cp bin/termos "$INSTALL_DIR/bin/termos"
 
+# Dashboard TUI (opcional: precisa ter sido compilado com `make build`)
+if [[ -x bin/termos-tui ]]; then
+    cp bin/termos-tui "$INSTALL_DIR/bin/termos-tui"
+else
+    echo "  ! bin/termos-tui ausente — rode 'make build' para o dashboard"
+fi
+
 # Make scripts executable
 echo "  Setting permissions..."
 chmod +x "$INSTALL_DIR/bin/termos"
+[[ -f "$INSTALL_DIR/bin/termos-tui" ]] && chmod +x "$INSTALL_DIR/bin/termos-tui"
 find "$INSTALL_DIR/src" -name "*.sh" -exec chmod +x {} \;
 
 # Create symlink

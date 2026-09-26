@@ -1,10 +1,9 @@
 ------------------------------------------------------------
----
---- README DETECTORS
----
+-- README Detector
 ------------------------------------------------------------
 
 local Filesystem = require("utils.filesystem")
+
 local ReadmeDetector = {}
 
 function ReadmeDetector.detect(path)

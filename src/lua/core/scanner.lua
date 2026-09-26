@@ -1,4 +1,3 @@
-local Filesystem       = require("utils.filesystem")
 local Project          = require("models.project")
 local LayoutDetector   = require("detectors.layout")
 local DockerDetector   = require("detectors.docker")
@@ -7,10 +6,11 @@ local LanguageDetector = require("detectors.language")
 local ReadmeDetector   = require("detectors.readme")
 local PluginsDetector  = require("detectors.plugins")
 
-local Scanner          = {}
+local Scanner = {}
 
 function Scanner.scan(path)
   local project = Project.new()
+
   Project.configure(project, {
     path = path,
     language = LanguageDetector.detect(path),
@@ -20,6 +20,7 @@ function Scanner.scan(path)
     layout = LayoutDetector.detect(path),
     plugins = PluginsDetector.detect(path)
   })
+
   return project
 end
 
